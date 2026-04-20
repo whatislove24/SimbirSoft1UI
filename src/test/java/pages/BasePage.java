@@ -11,10 +11,23 @@ public abstract class BasePage {
     protected WebDriver driver;
     protected WebDriverWait wait;
 
+    private static final Duration TIMEOUT = Duration.ofSeconds(15);
+
     public BasePage(WebDriver driver) {
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(30));
-
+        this.wait = new WebDriverWait(driver, TIMEOUT);
         PageFactory.initElements(driver, this);
+    }
+
+    protected void openUrl(String url) {
+        driver.get(url);
+    }
+
+    protected String getTitle() {
+        return driver.getTitle();
+    }
+
+    protected String getCurrentUrl() {
+        return driver.getCurrentUrl();
     }
 }

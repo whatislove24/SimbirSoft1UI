@@ -25,4 +25,7 @@ public class ProductPage extends BasePage {
     public void addToCart() {
         addToCart.click();
     }
+    public void returnToHome() {
+        driver.get("https://automationteststore.com/");
+    }
 }
