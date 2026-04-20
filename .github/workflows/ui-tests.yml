@@ -1,0 +1,33 @@
+name: UI автотесты
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Клонирование репозитория
+        uses: actions/checkout@v4
+
+      - name: Установка Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Установка Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Запуск тестов
+        run: mvn clean test
+
+      - name: Загрузка Allure результатов
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: target/allure-results
