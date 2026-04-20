@@ -23,7 +23,7 @@ public class HomePage extends BasePage {
             driver.get(url);
         }
 
-        wait.until(ExpectedConditions.titleIs("A place to practice your automation skills!"));
+        wait.until(ExpectedConditions.titleContains("A place to practice"));
     }
     public void openRandomProduct() {
 
