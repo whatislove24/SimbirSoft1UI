@@ -111,3 +111,4 @@ public class CartPage extends BasePage {
         wait.until(ExpectedConditions.stalenessOf(updateBtn));
     }
 }
+

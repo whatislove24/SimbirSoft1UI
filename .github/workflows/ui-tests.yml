@@ -8,6 +8,12 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      TEST_TIMEOUT: "45"
+      CHROME_OPTIONS: "--headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --window-size=1920,1080"
+      MAVEN_OPTS: "-Xmx2g -XX:+UseG1GC"
 
     steps:
       - name: Клонирование репозитория
@@ -18,16 +24,39 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: 'maven'
 
-      - name: Установка Chrome
+      - name: 🌐 Установка Chrome и Chromedriver
         uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
 
       - name: Запуск тестов
-        run: mvn clean test
+        run: mvn clean test -Dchrome.options="${{ env.CHROME_OPTIONS }}" -Dsurefire.rerunFailingTestsCount=1
+
 
       - name: Загрузка Allure результатов
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results
+          name: allure-results-${{ github.run_number }}
           path: target/allure-results
+          retention-days: 7
+
+      - name: Загрузка скриншотов при падении
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-screenshots-${{ github.run_number }}
+          path: |
+            failures/
+            target/failsafe-reports/
+          retention-days: 7
+
+      - name: Загрузка логов Maven
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maven-logs-${{ github.run_number }}
+          path: target/surefire-reports/
+          retention-days: 7
