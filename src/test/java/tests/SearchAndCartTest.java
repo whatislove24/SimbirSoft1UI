@@ -5,7 +5,6 @@ import org.openqa.selenium.WebDriver;
 import pages.*;
 import utils.DriverFactory;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -57,6 +56,12 @@ public class SearchAndCartTest {
 
         driver.findElement(By.id("cart_update")).click();
 
-        assertTrue(cart.getTotal() > 0);
+        double before = cart.getTotal();
+
+        cart.updateCheapestItemQuantity(2);
+
+        double after = cart.getTotal();
+
+        assertTrue(after > before, "Сумма не увеличилась");
     }
 }

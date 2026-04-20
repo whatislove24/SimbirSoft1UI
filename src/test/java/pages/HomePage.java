@@ -1,7 +1,6 @@
 package pages;
 
 import org.openqa.selenium.*;
-import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.util.List;
@@ -9,31 +8,36 @@ import java.util.Random;
 
 public class HomePage extends BasePage {
 
-    @FindBy(css = ".thumbnail")
-    private List<WebElement> products;
+    private final By products = By.cssSelector(".thumbnail");
 
     public HomePage(WebDriver driver) {
         super(driver);
     }
 
-
     public void open() {
-        String url = "https://automationteststore.com/";
-        if (!driver.getCurrentUrl().equals(url)) {
-            driver.get(url);
-        }
+        driver.get("https://automationteststore.com/");
 
-        wait.until(ExpectedConditions.titleIs("A place to practice your automation skills!"));
+        wait.until(ExpectedConditions.titleContains(
+                "practice your automation skills"
+        ));
+
+        wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(products));
     }
+
     public void openRandomProduct() {
 
-        wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector(".thumbnail")));
+        List<WebElement> items = wait.until(
+                ExpectedConditions.presenceOfAllElementsLocatedBy(products)
+        );
 
-        if (products.isEmpty()) {
-            throw new RuntimeException("Товары на главной странице не найдены!");
+        if (items.isEmpty()) {
+            throw new RuntimeException("No products found on HomePage");
         }
 
-        int index = new Random().nextInt(products.size());
-        products.get(index).findElement(By.cssSelector("a")).click();
+        int index = new Random().nextInt(items.size());
+
+        WebElement product = items.get(index);
+
+        wait.until(ExpectedConditions.elementToBeClickable(product)).click();
     }
 }

@@ -32,10 +32,13 @@ public class CartTest {
         home.open();
 
         for (int i = 0; i < 5; i++) {
+
+            home.open();
+
             home.openRandomProduct();
             product.setRandomQuantity();
             product.addToCart();
-            home.open();
+            product.returnToHome();
         }
 
         cart.open();
