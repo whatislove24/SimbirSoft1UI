@@ -27,8 +27,8 @@ public class ProductPage extends BasePage {
         click(addToCartButton);
         return this;
     }
+
     public HomePage returnToHome() {
-        openPath("");
-        return new HomePage(driver);
+        return goHome();
     }
 }

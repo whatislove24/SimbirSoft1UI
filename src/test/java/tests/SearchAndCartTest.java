@@ -2,23 +2,27 @@ package tests;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import pages.CartPage;
+import pages.SearchPage;
 
 public class SearchAndCartTest extends BaseTest {
 
     @Test
     void testSearchAndCart() {
-        searchPage.searchAndSort("shirt", "Name A - Z");
+        SearchPage searchPage = homePage.openSkincareCategory()
+                .searchAndSort("shirt", "Name A - Z");
 
         for (int i = 2; i <= 3; i++) {
-            searchPage.openProduct(i);
-            productPage.setRandomQuantity();
-            productPage.addToCart();
-            productPage.returnToHome();
+            homePage = searchPage.openProduct(i)
+                    .setRandomQuantity()
+                    .addToCart()
+                    .returnToHome();
 
-            searchPage.searchAndSort("shirt", "Name A - Z");
+            searchPage = homePage.openSkincareCategory()
+                    .searchAndSort("shirt", "Name A - Z");
         }
 
-        cartPage.open();
+        CartPage cartPage = homePage.goToCart().waitUntilOpened();
 
         double before = cartPage.getTotal();
         cartPage.updateCheapestItemQuantity(2);

@@ -6,7 +6,6 @@ import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import utils.PriceUtils;
 
@@ -14,18 +13,24 @@ import java.util.List;
 
 public class CartPage extends BasePage {
 
-    private static final By PAGE_TITLE = By.xpath("//span[@class='maintext' and contains(text(), 'Shopping Cart')]");
-    private static final By TOTAL_AMOUNT = By.xpath("//table//td[.//span[contains(text(), 'Total')]]/following-sibling::td/span");
+    private static final By PAGE_TITLE =
+            By.xpath("//span[@class='maintext' and contains(text(), 'Shopping Cart')]");
+    private static final By TOTAL_AMOUNT =
+            By.xpath("//table//td[.//span[contains(text(), 'Total')]]/following-sibling::td/span");
     private static final By REMOVE_BUTTONS = By.xpath("//a[contains(@href,'remove')]");
-    private static final By PRODUCT_ROWS = By.xpath("//table//tr[descendant::input[contains(@id, 'cart_quantity')]]");
-    private static final By QUANTITY_INPUT = By.xpath(".//input[contains(@id, 'cart_quantity')]");
+    private static final By PRODUCT_ROWS =
+            By.xpath("//table//tr[descendant::input[contains(@id, 'cart_quantity')]]");
+    private static final By QUANTITY_INPUT =
+            By.xpath(".//input[contains(@id, 'cart_quantity')]");
     private static final By UPDATE_BUTTON = By.id("cart_update");
-
-    @FindBy(xpath = "//table//td[.//span[contains(text(), 'Total')]]/following-sibling::td/span")
-    private WebElement totalAmountElement;
 
     public CartPage(WebDriver driver) {
         super(driver);
+    }
+
+    public CartPage waitUntilOpened() {
+        wait.until(ExpectedConditions.visibilityOfElementLocated(PAGE_TITLE));
+        return this;
     }
 
     public double getTotal() {
@@ -109,11 +114,6 @@ public class CartPage extends BasePage {
         click(updateButton);
         wait.until(ExpectedConditions.stalenessOf(updateButton));
 
-        return this;
-    }
-    public CartPage open() {
-        openPath("index.php?rt=checkout/cart");
-        wait.until(ExpectedConditions.visibilityOfElementLocated(PAGE_TITLE));
         return this;
     }
 }

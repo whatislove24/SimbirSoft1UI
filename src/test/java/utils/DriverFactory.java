@@ -4,11 +4,9 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
-import java.time.Duration;
-
 public class DriverFactory {
 
-    private static ThreadLocal<WebDriver> driverThread = new ThreadLocal<>();
+    private static final ThreadLocal<WebDriver> driverThread = new ThreadLocal<>();
 
     public static void createDriver() {
         ChromeOptions options = new ChromeOptions();
@@ -20,9 +18,8 @@ public class DriverFactory {
         options.addArguments("--disable-blink-features=AutomationControlled");
         options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
         options.setExperimentalOption("useAutomationExtension", false);
-        WebDriver driver = new ChromeDriver(options);
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
 
+        WebDriver driver = new ChromeDriver(options);
         driverThread.set(driver);
     }
 

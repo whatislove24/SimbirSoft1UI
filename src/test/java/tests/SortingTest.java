@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import pages.SearchPage;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,7 +16,7 @@ public class SortingTest extends BaseTest {
     @Test
     @DisplayName("Проверка сортировки по имени A-Z")
     void testSortByNameAZ() {
-        homePage.openSkincareCategory();
+        SearchPage searchPage = homePage.openSkincareCategory();
 
         searchPage.sortBy("Name A - Z");
 
@@ -32,7 +33,7 @@ public class SortingTest extends BaseTest {
             "'Price High > Low', 'desc'"
     })
     void testSortByPrice(String sortOption, String direction) {
-        homePage.openSkincareCategory();
+        SearchPage searchPage = homePage.openSkincareCategory();
 
         searchPage.sortBy(sortOption);
 

@@ -2,20 +2,20 @@ package tests;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import pages.CartPage;
 
 public class CartTest extends BaseTest {
 
     @Test
     void testRemoveEvenItems() {
         for (int i = 0; i < 5; i++) {
-            homePage.open();
-            homePage.openRandomProduct();
-            productPage.setRandomQuantity();
-            productPage.addToCart();
-            productPage.returnToHome();
+            homePage = homePage.openRandomProduct()
+                    .setRandomQuantity()
+                    .addToCart()
+                    .returnToHome();
         }
 
-        cartPage.open();
+        CartPage cartPage = homePage.goToCart().waitUntilOpened();
 
         double before = cartPage.getTotal();
         cartPage.removeEvenItems();

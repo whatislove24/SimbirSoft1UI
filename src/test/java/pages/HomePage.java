@@ -11,15 +11,17 @@ import java.util.Random;
 public class HomePage extends BasePage {
 
     private static final By PRODUCTS = By.cssSelector(".thumbnail");
-    private static final By SKINCARE_MENU_LINK =
-            By.xpath("//a[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'skincare')]");
+    private static final By SKINCARE_MENU_LINK = By.xpath(
+            "//a[contains(translate(normalize-space(.), " +
+                    "'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'skincare')]"
+    );
 
     public HomePage(WebDriver driver) {
         super(driver);
     }
 
     public HomePage open() {
-        openPath("");
+        openStartPage();
         wait.until(ExpectedConditions.titleContains("practice your automation skills"));
         wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(PRODUCTS));
         return this;
@@ -34,17 +36,14 @@ public class HomePage extends BasePage {
             throw new RuntimeException("No products found on HomePage");
         }
 
-        int index = new Random().nextInt(items.size());
-        WebElement product = items.get(index);
+        WebElement product = items.get(new Random().nextInt(items.size()));
         click(product);
 
         return new ProductPage(driver);
     }
 
     public SearchPage openSkincareCategory() {
-        List<WebElement> links = driver.findElements(
-                By.xpath("//a[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'skincare')]")
-        );
+        List<WebElement> links = driver.findElements(SKINCARE_MENU_LINK);
 
         WebElement target = links.stream()
                 .filter(WebElement::isDisplayed)

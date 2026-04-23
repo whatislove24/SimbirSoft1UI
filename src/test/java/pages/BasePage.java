@@ -3,6 +3,7 @@ package pages;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
@@ -13,10 +14,16 @@ import java.time.Duration;
 
 public abstract class BasePage {
 
-    protected WebDriver driver;
-    protected WebDriverWait wait;
+    protected final WebDriver driver;
+    protected final WebDriverWait wait;
 
     private static final Duration TIMEOUT = Duration.ofSeconds(15);
+
+    @FindBy(css = "a.logo")
+    private WebElement homeLink;
+
+    @FindBy(css = "a[href*='rt=checkout/cart']")
+    private WebElement cartLink;
 
     public BasePage(WebDriver driver) {
         this.driver = driver;
@@ -24,20 +31,8 @@ public abstract class BasePage {
         PageFactory.initElements(driver, this);
     }
 
-    protected void openUrl(String url) {
-        driver.get(url);
-    }
-
-    protected void openPath(String path) {
-        driver.get(TestConfig.BASE_URL + path);
-    }
-
-    protected String getTitle() {
-        return driver.getTitle();
-    }
-
-    protected String getCurrentUrl() {
-        return driver.getCurrentUrl();
+    protected void openStartPage() {
+        driver.get(TestConfig.BASE_URL);
     }
 
     protected void type(WebElement element, String value) {
@@ -67,5 +62,15 @@ public abstract class BasePage {
 
     protected void refreshPage() {
         driver.navigate().refresh();
+    }
+
+    public HomePage goHome() {
+        click(homeLink);
+        return new HomePage(driver);
+    }
+
+    public CartPage goToCart() {
+        click(cartLink);
+        return new CartPage(driver);
     }
 }
