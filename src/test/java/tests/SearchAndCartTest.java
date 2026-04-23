@@ -1,36 +1,42 @@
 package tests;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
-import pages.*;
+import pages.CartPage;
+import pages.ProductPage;
+import pages.SearchPage;
 import utils.DriverFactory;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
-
-import static org.junit.jupiter.api.Assertions.*;
+import utils.TestConfig;
 
 public class SearchAndCartTest {
 
-    WebDriver driver;
+    private WebDriver driver;
+    private SearchPage search;
+    private ProductPage product;
+    private CartPage cart;
+
     @BeforeEach
     void setUp() {
         DriverFactory.createDriver();
         driver = DriverFactory.getDriver();
+
+        search = new SearchPage(driver);
+        product = new ProductPage(driver);
+        cart = new CartPage(driver);
+
+        driver.get(TestConfig.BASE_URL);
     }
 
     @AfterEach
     void tearDown() {
         DriverFactory.quitDriver();
     }
+
     @Test
     void testSearchAndCart() {
-
-        SearchPage search = new SearchPage(driver);
-        ProductPage product = new ProductPage(driver);
-        CartPage cart = new CartPage(driver);
-
-        driver.get("https://automationteststore.com/");
-
         search.search("shirt");
         search.sortBy("Name A - Z");
 
@@ -38,30 +44,18 @@ public class SearchAndCartTest {
             search.openProduct(i);
             product.setRandomQuantity();
             product.addToCart();
+            product.returnToHome();
 
-            driver.navigate().back();
             search.search("shirt");
             search.sortBy("Name A - Z");
         }
 
         cart.open();
 
-        WebElement cheapest = cart.getCheapestRow();
-
-        WebElement qty = cheapest.findElement(By.cssSelector("input"));
-        int value = Integer.parseInt(qty.getAttribute("value"));
-
-        qty.clear();
-        qty.sendKeys(String.valueOf(value * 2));
-
-        driver.findElement(By.id("cart_update")).click();
-
         double before = cart.getTotal();
-
         cart.updateCheapestItemQuantity(2);
-
         double after = cart.getTotal();
 
-        assertTrue(after > before, "Сумма не увеличилась");
+        Assertions.assertTrue(after > before, "Сумма не увеличилась");
     }
 }
