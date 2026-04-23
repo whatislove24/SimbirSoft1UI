@@ -7,8 +7,7 @@ public class SearchAndCartTest extends BaseTest {
 
     @Test
     void testSearchAndCart() {
-        searchPage.search("shirt");
-        searchPage.sortBy("Name A - Z");
+        searchPage.searchAndSort("shirt", "Name A - Z");
 
         for (int i = 2; i <= 3; i++) {
             searchPage.openProduct(i);
@@ -16,8 +15,7 @@ public class SearchAndCartTest extends BaseTest {
             productPage.addToCart();
             productPage.returnToHome();
 
-            searchPage.search("shirt");
-            searchPage.sortBy("Name A - Z");
+            searchPage.searchAndSort("shirt", "Name A - Z");
         }
 
         cartPage.open();

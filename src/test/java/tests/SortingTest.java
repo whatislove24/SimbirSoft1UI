@@ -3,6 +3,8 @@ package tests;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,27 +13,39 @@ import java.util.List;
 public class SortingTest extends BaseTest {
 
     @Test
-    @DisplayName("Проверка сортировки по имени и цене")
-    void testSorting() {
-
+    @DisplayName("Проверка сортировки по имени A-Z")
+    void testSortByNameAZ() {
         driver.get("https://automationteststore.com/index.php?rt=product/category&path=68");
 
         searchPage.sortBy("Name A - Z");
-        List<String> actualNamesAZ = searchPage.getProductNames();
-        List<String> expectedNamesAZ = new ArrayList<>(actualNamesAZ);
-        Collections.sort(expectedNamesAZ);
-        Assertions.assertEquals(expectedNamesAZ, actualNamesAZ, "Сортировка по имени A-Z неверна");
 
-        searchPage.sortBy("Price Low > High");
-        List<Double> actualPricesLowHigh = searchPage.getProductPrices();
-        List<Double> expectedPricesLowHigh = new ArrayList<>(actualPricesLowHigh);
-        Collections.sort(expectedPricesLowHigh);
-        Assertions.assertEquals(expectedPricesLowHigh, actualPricesLowHigh, "Сортировка по цене Low > High неверна");
+        List<String> actualNames = searchPage.getProductNames();
+        List<String> expectedNames = new ArrayList<>(actualNames);
+        Collections.sort(expectedNames);
 
-        searchPage.sortBy("Price High > Low");
-        List<Double> actualPricesHighLow = searchPage.getProductPrices();
-        List<Double> expectedPricesHighLow = new ArrayList<>(actualPricesHighLow);
-        expectedPricesHighLow.sort(Collections.reverseOrder());
-        Assertions.assertEquals(expectedPricesHighLow, actualPricesHighLow, "Сортировка по цене High > Low неверна");
+        Assertions.assertEquals(expectedNames, actualNames, "Сортировка по имени A-Z неверна");
+    }
+
+    @ParameterizedTest(name = "Проверка сортировки по цене: {0}")
+    @CsvSource({
+            "'Price Low > High', 'asc'",
+            "'Price High > Low', 'desc'"
+    })
+    void testSortByPrice(String sortOption, String direction) {
+        driver.get("https://automationteststore.com/index.php?rt=product/category&path=68");
+
+        searchPage.sortBy(sortOption);
+
+        List<Double> actualPrices = searchPage.getProductPrices();
+        List<Double> expectedPrices = new ArrayList<>(actualPrices);
+
+        if ("asc".equals(direction)) {
+            Collections.sort(expectedPrices);
+        } else {
+            expectedPrices.sort(Collections.reverseOrder());
+        }
+
+        Assertions.assertEquals(expectedPrices, actualPrices,
+                "Сортировка по цене работает неверно: " + sortOption);
     }
 }

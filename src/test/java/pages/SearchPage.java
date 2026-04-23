@@ -94,4 +94,9 @@ public class SearchPage extends BasePage {
                 .filter(price -> price > 0.0)
                 .toList();
     }
+    public SearchPage searchAndSort(String keyword, String sortOption) {
+        search(keyword);
+        sortBy(sortOption);
+        return this;
+    }
 }
