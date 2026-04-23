@@ -15,7 +15,7 @@ public class SortingTest extends BaseTest {
     @Test
     @DisplayName("Проверка сортировки по имени A-Z")
     void testSortByNameAZ() {
-        driver.get("https://automationteststore.com/index.php?rt=product/category&path=68");
+        homePage.openSkincareCategory();
 
         searchPage.sortBy("Name A - Z");
 
@@ -32,7 +32,7 @@ public class SortingTest extends BaseTest {
             "'Price High > Low', 'desc'"
     })
     void testSortByPrice(String sortOption, String direction) {
-        driver.get("https://automationteststore.com/index.php?rt=product/category&path=68");
+        homePage.openSkincareCategory();
 
         searchPage.sortBy(sortOption);
 
@@ -45,7 +45,10 @@ public class SortingTest extends BaseTest {
             expectedPrices.sort(Collections.reverseOrder());
         }
 
-        Assertions.assertEquals(expectedPrices, actualPrices,
-                "Сортировка по цене работает неверно: " + sortOption);
+        Assertions.assertEquals(
+                expectedPrices,
+                actualPrices,
+                "Сортировка по цене работает неверно: " + sortOption
+        );
     }
 }
