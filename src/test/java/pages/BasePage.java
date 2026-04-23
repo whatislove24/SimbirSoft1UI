@@ -1,9 +1,10 @@
 package pages;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
@@ -19,11 +20,8 @@ public abstract class BasePage {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(15);
 
-    @FindBy(css = "a.logo")
-    private WebElement homeLink;
-
-    @FindBy(css = "a[href*='rt=checkout/cart']")
-    private WebElement cartLink;
+    private static final By HOME_LINK = By.cssSelector("a.logo");
+    private static final By CART_LINK = By.cssSelector("a[href*='rt=checkout/cart']");
 
     public BasePage(WebDriver driver) {
         this.driver = driver;
@@ -35,6 +33,14 @@ public abstract class BasePage {
         driver.get(TestConfig.BASE_URL);
     }
 
+    protected String getTitle() {
+        return driver.getTitle();
+    }
+
+    protected String getCurrentUrl() {
+        return driver.getCurrentUrl();
+    }
+
     protected void type(WebElement element, String value) {
         wait.until(ExpectedConditions.visibilityOf(element));
         element.clear();
@@ -42,7 +48,15 @@ public abstract class BasePage {
     }
 
     protected void click(WebElement element) {
-        wait.until(ExpectedConditions.elementToBeClickable(element)).click();
+        wait.ignoring(StaleElementReferenceException.class)
+                .until(ExpectedConditions.elementToBeClickable(element))
+                .click();
+    }
+
+    protected void click(By locator) {
+        wait.ignoring(StaleElementReferenceException.class)
+                .until(ExpectedConditions.elementToBeClickable(locator))
+                .click();
     }
 
     protected void selectByText(WebElement element, String text) {
@@ -65,12 +79,12 @@ public abstract class BasePage {
     }
 
     public HomePage goHome() {
-        click(homeLink);
+        click(HOME_LINK);
         return new HomePage(driver);
     }
 
     public CartPage goToCart() {
-        click(cartLink);
+        click(CART_LINK);
         return new CartPage(driver);
     }
 }
