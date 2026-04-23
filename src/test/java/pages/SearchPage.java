@@ -30,7 +30,7 @@ public class SearchPage extends BasePage {
 
     public SearchPage search(String keyword) {
         wait.until(ExpectedConditions.visibilityOf(searchInput));
-        type(searchInput, keyword);
+        clearAndType(searchInput, keyword);
         searchInput.sendKeys(Keys.ENTER);
         wait.until(ExpectedConditions.or(
                 ExpectedConditions.urlContains("keyword="),

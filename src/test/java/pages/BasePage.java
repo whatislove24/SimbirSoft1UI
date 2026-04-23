@@ -1,31 +1,30 @@
 package pages;
 
-import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import utils.TestConfig;
 
-import java.time.Duration;
-
 public abstract class BasePage {
 
     protected final WebDriver driver;
     protected final WebDriverWait wait;
 
-    private static final Duration TIMEOUT = Duration.ofSeconds(15);
+    @FindBy(css = "a.logo")
+    private WebElement homeLink;
 
-    private static final By HOME_LINK = By.cssSelector("a.logo");
-    private static final By CART_LINK = By.cssSelector("a[href*='rt=checkout/cart']");
+    @FindBy(css = "a[href*='rt=checkout/cart']")
+    private WebElement cartLink;
 
     public BasePage(WebDriver driver) {
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, TIMEOUT);
+        this.wait = new WebDriverWait(driver, TestConfig.DEFAULT_TIMEOUT);
         PageFactory.initElements(driver, this);
     }
 
@@ -41,8 +40,9 @@ public abstract class BasePage {
         return driver.getCurrentUrl();
     }
 
-    protected void type(WebElement element, String value) {
-        wait.until(ExpectedConditions.visibilityOf(element));
+    protected void clearAndType(WebElement element, String value) {
+        wait.ignoring(StaleElementReferenceException.class)
+                .until(ExpectedConditions.visibilityOf(element));
         element.clear();
         element.sendKeys(value);
     }
@@ -53,14 +53,9 @@ public abstract class BasePage {
                 .click();
     }
 
-    protected void click(By locator) {
-        wait.ignoring(StaleElementReferenceException.class)
-                .until(ExpectedConditions.elementToBeClickable(locator))
-                .click();
-    }
-
     protected void selectByText(WebElement element, String text) {
-        wait.until(ExpectedConditions.visibilityOf(element));
+        wait.ignoring(StaleElementReferenceException.class)
+                .until(ExpectedConditions.visibilityOf(element));
         new Select(element).selectByVisibleText(text);
     }
 
@@ -79,12 +74,12 @@ public abstract class BasePage {
     }
 
     public HomePage goHome() {
-        click(HOME_LINK);
+        click(homeLink);
         return new HomePage(driver);
     }
 
     public CartPage goToCart() {
-        click(CART_LINK);
-        return new CartPage(driver);
+        click(cartLink);
+        return new CartPage(driver).waitUntilOpened();
     }
 }

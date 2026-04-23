@@ -22,7 +22,7 @@ public class SearchAndCartTest extends BaseTest {
                     .searchAndSort("shirt", "Name A - Z");
         }
 
-        CartPage cartPage = homePage.goToCart().waitUntilOpened();
+        CartPage cartPage = homePage.goToCart();
 
         double before = cartPage.getTotal();
         cartPage.updateCheapestItemQuantity(2);

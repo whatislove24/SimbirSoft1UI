@@ -108,7 +108,7 @@ public class CartPage extends BasePage {
         WebElement input = row.findElement(QUANTITY_INPUT);
         int currentQty = Integer.parseInt(input.getAttribute("value"));
 
-        type(input, String.valueOf(currentQty * multiplier));
+        clearAndType(input, String.valueOf(currentQty * multiplier));
 
         WebElement updateButton = driver.findElement(UPDATE_BUTTON);
         click(updateButton);

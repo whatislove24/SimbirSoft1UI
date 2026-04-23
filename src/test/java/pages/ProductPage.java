@@ -19,7 +19,7 @@ public class ProductPage extends BasePage {
     }
 
     public ProductPage setRandomQuantity() {
-        type(quantityInput, String.valueOf(new Random().nextInt(3) + 1));
+        clearAndType(quantityInput, String.valueOf(new Random().nextInt(3) + 1));
         return this;
     }
 

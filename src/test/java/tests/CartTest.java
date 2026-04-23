@@ -15,12 +15,15 @@ public class CartTest extends BaseTest {
                     .returnToHome();
         }
 
-        CartPage cartPage = homePage.goToCart().waitUntilOpened();
+        CartPage cartPage = homePage.goToCart();
 
         double before = cartPage.getTotal();
         cartPage.removeEvenItems();
         double after = cartPage.getTotal();
 
-        Assertions.assertTrue(after < before);
+        Assertions.assertTrue(
+                after < before,
+                "Сумма корзины после удаления четных товаров не уменьшилась"
+        );
     }
 }
