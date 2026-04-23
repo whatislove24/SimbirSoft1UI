@@ -1,14 +1,22 @@
 package pages;
 
-import org.openqa.selenium.*;
+import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.Select;
 import utils.PriceUtils;
 
 import java.util.List;
 
 public class SearchPage extends BasePage {
+
+    private static final By PAGE_TITLE = By.className("maintext");
+    private static final By PRODUCT_LINKS = By.cssSelector("a.prdocutname");
+    private static final By PRICE_ELEMENTS = By.cssSelector(".oneprice, .pricenew");
 
     @FindBy(id = "filter_keyword")
     private WebElement searchInput;
@@ -20,67 +28,54 @@ public class SearchPage extends BasePage {
         super(driver);
     }
 
-
-    public void search(String keyword) {
+    public SearchPage search(String keyword) {
         wait.until(ExpectedConditions.visibilityOf(searchInput));
-        searchInput.clear();
-        searchInput.sendKeys(keyword);
-
-        try { Thread.sleep(500); } catch (InterruptedException ignored) {}
-
+        type(searchInput, keyword);
         searchInput.sendKeys(Keys.ENTER);
+        wait.until(ExpectedConditions.or(
+                ExpectedConditions.urlContains("keyword="),
+                ExpectedConditions.visibilityOfElementLocated(PAGE_TITLE)
+        ));
+        return this;
     }
 
-
-    public void reopenSearch() {
-        driver.get("https://automationteststore.com/index.php?rt=product/search");
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.className("maintext")));
-    }
-
-    public void sortBy(String value) {
-        wait.until(ExpectedConditions.visibilityOf(sortDropdown));
-        new Select(sortDropdown).selectByVisibleText(value);
+    public SearchPage sortBy(String value) {
+        selectByText(sortDropdown, value);
         wait.until(ExpectedConditions.urlContains("sort="));
+        return this;
     }
 
-
-    public void openProduct(int index) {
+    public ProductPage openProduct(int index) {
         wait.until(ExpectedConditions.or(
                 ExpectedConditions.urlContains("keyword="),
                 ExpectedConditions.urlContains("product/search"),
-                ExpectedConditions.visibilityOfElementLocated(By.className("maintext"))
+                ExpectedConditions.visibilityOfElementLocated(PAGE_TITLE)
         ));
 
-
-        By productLocator = By.cssSelector("a.prdocutname");
-
         try {
-
-            wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(productLocator));
+            wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(PRODUCT_LINKS));
         } catch (TimeoutException e) {
-
-            driver.navigate().refresh();
-
-            wait.until(ExpectedConditions.visibilityOfElementLocated(productLocator));
+            refreshPage();
+            wait.until(ExpectedConditions.visibilityOfElementLocated(PRODUCT_LINKS));
         }
 
-        List<WebElement> products = driver.findElements(productLocator);
+        List<WebElement> products = driver.findElements(PRODUCT_LINKS);
 
-        if (products.size() >= index) {
-            WebElement target = products.get(index - 1);
-
-
-            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", target);
-
-
-            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", target);
-        } else {
-            throw new NoSuchElementException("Товар №" + index + " не найден. Найдено всего: " + products.size());
+        if (products.size() < index) {
+            throw new NoSuchElementException(
+                    "Товар №" + index + " не найден. Найдено всего: " + products.size()
+            );
         }
+
+        WebElement target = products.get(index - 1);
+        scrollIntoView(target);
+        jsClick(target);
+
+        return new ProductPage(driver);
     }
 
     public List<String> getProductNames() {
-        List<WebElement> names = driver.findElements(By.cssSelector("a.prdocutname"));
+        List<WebElement> names = driver.findElements(PRODUCT_LINKS);
         return names.stream()
                 .map(WebElement::getText)
                 .map(String::trim)
@@ -90,7 +85,7 @@ public class SearchPage extends BasePage {
     }
 
     public List<Double> getProductPrices() {
-        List<WebElement> priceElements = driver.findElements(By.cssSelector(".oneprice, .pricenew"));
+        List<WebElement> priceElements = driver.findElements(PRICE_ELEMENTS);
         return priceElements.stream()
                 .map(WebElement::getText)
                 .map(String::trim)
