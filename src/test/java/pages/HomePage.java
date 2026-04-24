@@ -30,7 +30,7 @@ public class HomePage extends BasePage {
         );
 
         if (items.isEmpty()) {
-            throw new RuntimeException("No products found on HomePage");
+            throw new RuntimeException("Товары на главной странице не найдены");
         }
 
         WebElement product = items.get(new Random().nextInt(items.size()));
