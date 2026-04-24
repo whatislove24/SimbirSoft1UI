@@ -13,66 +13,58 @@ public class SortingTest extends BaseTest {
 
     @ParameterizedTest(name = "Проверка сортировки: {0}")
     @CsvSource({
-            "'Name A - Z', 'nameAsc'",
-            "'Name Z - A', 'nameDesc'",
-            "'Price Low > High', 'priceAsc'",
-            "'Price High > Low', 'priceDesc'"
+            "'Name A - Z', 'name', false",
+            "'Name Z - A', 'name', true",
+            "'Price Low > High', 'price', false",
+            "'Price High > Low', 'price', true"
     })
-    void testSorting(String sortOption, String sortType) {
-        SearchPage searchPage = homePage.openSkincareCategory();
+    void testSorting(String sortOption, String sortType, boolean reversed) {
+        SearchPage searchPage = openSortedSkincarePage(sortOption);
 
-        searchPage.sortBy(sortOption);
-
-        switch (sortType) {
-            case "nameAsc" -> {
-                List<String> actualNames = searchPage.getProductNames();
-                List<String> expectedNames = new ArrayList<>(actualNames);
-                Collections.sort(expectedNames);
-
-                Assertions.assertEquals(
-                        expectedNames,
-                        actualNames,
-                        "Сортировка по имени A-Z неверна"
-                );
-            }
-
-            case "nameDesc" -> {
-                List<String> actualNames = searchPage.getProductNames();
-                List<String> expectedNames = new ArrayList<>(actualNames);
-                expectedNames.sort(Collections.reverseOrder());
-
-                Assertions.assertEquals(
-                        expectedNames,
-                        actualNames,
-                        "Сортировка по имени Z-A неверна"
-                );
-            }
-
-            case "priceAsc" -> {
-                List<Double> actualPrices = searchPage.getProductPrices();
-                List<Double> expectedPrices = new ArrayList<>(actualPrices);
-                Collections.sort(expectedPrices);
-
-                Assertions.assertEquals(
-                        expectedPrices,
-                        actualPrices,
-                        "Сортировка по цене Low > High неверна"
-                );
-            }
-
-            case "priceDesc" -> {
-                List<Double> actualPrices = searchPage.getProductPrices();
-                List<Double> expectedPrices = new ArrayList<>(actualPrices);
-                expectedPrices.sort(Collections.reverseOrder());
-
-                Assertions.assertEquals(
-                        expectedPrices,
-                        actualPrices,
-                        "Сортировка по цене High > Low неверна"
-                );
-            }
-
-            default -> throw new IllegalArgumentException("Неизвестный тип сортировки: " + sortType);
+        if ("name".equals(sortType)) {
+            assertNamesSorted(searchPage, sortOption, reversed);
+        } else {
+            assertPricesSorted(searchPage, sortOption, reversed);
         }
+    }
+
+    private void assertNamesSorted(SearchPage searchPage, String sortOption, boolean reversed) {
+        List<String> actualNames = searchPage.getProductNames();
+        List<String> expectedNames = sortedCopy(actualNames, reversed);
+
+        Assertions.assertEquals(
+                expectedNames,
+                actualNames,
+                "Сортировка по имени работает неверно: " + sortOption
+        );
+    }
+
+    private void assertPricesSorted(SearchPage searchPage, String sortOption, boolean reversed) {
+        List<Double> actualPrices = searchPage.getProductPrices();
+        List<Double> expectedPrices = sortedCopy(actualPrices, reversed);
+
+        Assertions.assertEquals(
+                expectedPrices,
+                actualPrices,
+                "Сортировка по цене работает неверно: " + sortOption
+        );
+    }
+
+    private SearchPage openSortedSkincarePage(String sortOption) {
+        SearchPage searchPage = homePage.openSkincareCategory();
+        searchPage.sortBy(sortOption);
+        return searchPage;
+    }
+
+    private <T extends Comparable<? super T>> List<T> sortedCopy(List<T> actual, boolean reversed) {
+        List<T> expected = new ArrayList<>(actual);
+
+        if (reversed) {
+            expected.sort(Collections.reverseOrder());
+        } else {
+            Collections.sort(expected);
+        }
+
+        return expected;
     }
 }

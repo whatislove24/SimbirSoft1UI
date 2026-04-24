@@ -1,11 +1,7 @@
 package pages;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.StaleElementReferenceException;
-import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
+import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import utils.PriceUtils;
 
@@ -13,35 +9,42 @@ import java.util.List;
 
 public class CartPage extends BasePage {
 
-    private static final By PAGE_TITLE =
-            By.xpath("//span[@class='maintext' and contains(text(), 'Shopping Cart')]");
-    private static final By TOTAL_AMOUNT =
-            By.xpath("//table//td[.//span[contains(text(), 'Total')]]/following-sibling::td/span");
-    private static final By REMOVE_BUTTONS = By.xpath("//a[contains(@href,'remove')]");
+    private static final By REMOVE_BUTTONS =
+            By.xpath("//a[contains(@href,'remove')]");
+
     private static final By PRODUCT_ROWS =
             By.xpath("//table//tr[descendant::input[contains(@id, 'cart_quantity')]]");
+
     private static final By QUANTITY_INPUT =
             By.xpath(".//input[contains(@id, 'cart_quantity')]");
-    private static final By UPDATE_BUTTON = By.id("cart_update");
+
+    @FindBy(xpath = "//span[@class='maintext' and contains(text(), 'Shopping Cart')]")
+    private WebElement pageTitle;
+
+    @FindBy(xpath = "//table//td[.//span[contains(text(), 'Total')]]/following-sibling::td/span")
+    private WebElement totalAmount;
+
+    @FindBy(id = "cart_update")
+    private WebElement updateButton;
 
     public CartPage(WebDriver driver) {
         super(driver);
     }
 
     public CartPage waitUntilOpened() {
-        wait.until(ExpectedConditions.visibilityOfElementLocated(PAGE_TITLE));
+        wait.until(ExpectedConditions.visibilityOf(pageTitle));
         return this;
     }
 
     public double getTotal() {
-        wait.until(ExpectedConditions.presenceOfElementLocated(TOTAL_AMOUNT));
-
         return wait.ignoring(StaleElementReferenceException.class)
-                .until(d -> {
-                    String text = d.findElement(TOTAL_AMOUNT).getText();
-                    if (text.isEmpty()) {
+                .until(driver -> {
+                    String text = totalAmount.getText();
+
+                    if (text == null || text.isBlank()) {
                         return null;
                     }
+
                     return PriceUtils.parsePrice(text);
                 });
     }
@@ -49,13 +52,17 @@ public class CartPage extends BasePage {
     public CartPage removeEvenItems() {
         wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(REMOVE_BUTTONS));
 
-        List<WebElement> buttons = driver.findElements(REMOVE_BUTTONS);
+        int count = driver.findElements(REMOVE_BUTTONS).size();
 
-        for (int i = buttons.size(); i >= 1; i--) {
+        for (int i = count; i >= 1; i--) {
             if (i % 2 == 0) {
-                WebElement button = wait.until(ExpectedConditions.elementToBeClickable(
-                        By.xpath("(//a[contains(@href,'remove')])[" + i + "]")
-                ));
+                By indexedRemoveButton =
+                        By.xpath("(//a[contains(@href,'remove')])[" + i + "]");
+
+                WebElement button = wait.until(
+                        ExpectedConditions.elementToBeClickable(indexedRemoveButton)
+                );
+
                 button.click();
                 wait.until(ExpectedConditions.stalenessOf(button));
             }
@@ -69,6 +76,7 @@ public class CartPage extends BasePage {
             wait.until(ExpectedConditions.visibilityOfElementLocated(PRODUCT_ROWS));
         } catch (TimeoutException e) {
             refreshPage();
+
             try {
                 wait.until(ExpectedConditions.visibilityOfElementLocated(PRODUCT_ROWS));
             } catch (TimeoutException ex) {
@@ -76,43 +84,59 @@ public class CartPage extends BasePage {
             }
         }
 
+        return findCheapestRow();
+    }
+
+    private WebElement findCheapestRow() {
         List<WebElement> rows = driver.findElements(PRODUCT_ROWS);
-        double min = Double.MAX_VALUE;
-        WebElement cheapest = null;
+
+        double minPrice = Double.MAX_VALUE;
+        WebElement cheapestRow = null;
 
         for (WebElement row : rows) {
             try {
                 List<WebElement> cells = row.findElements(By.tagName("td"));
-                if (cells.size() >= 4) {
-                    double price = PriceUtils.parsePrice(cells.get(3).getText());
-                    if (price < min) {
-                        min = price;
-                        cheapest = row;
-                    }
+
+                if (cells.size() < 4) {
+                    continue;
                 }
+
+                double price = PriceUtils.parsePrice(cells.get(3).getText());
+
+                if (price < minPrice) {
+                    minPrice = price;
+                    cheapestRow = row;
+                }
+
             } catch (StaleElementReferenceException e) {
                 return getCheapestRow();
             }
         }
 
-        return cheapest;
+        return cheapestRow;
     }
 
     public CartPage updateCheapestItemQuantity(int multiplier) {
-        WebElement row = getCheapestRow();
+        WebElement cheapestRow = getCheapestRow();
 
-        if (row == null) {
-            throw new NoSuchElementException("Не удалось найти товар для обновления количества.");
+        if (cheapestRow == null) {
+            throw new NoSuchElementException(
+                    "Не удалось найти товар для обновления количества."
+            );
         }
 
-        WebElement input = row.findElement(QUANTITY_INPUT);
-        int currentQty = Integer.parseInt(input.getAttribute("value"));
+        double totalBeforeUpdate = getTotal();
 
-        clearAndType(input, String.valueOf(currentQty * multiplier));
+        WebElement quantityInput = cheapestRow.findElement(QUANTITY_INPUT);
 
-        WebElement updateButton = driver.findElement(UPDATE_BUTTON);
+        int currentQuantity = Integer.parseInt(quantityInput.getAttribute("value"));
+        int newQuantity = currentQuantity * multiplier;
+
+        clearAndType(quantityInput, String.valueOf(newQuantity));
+
         click(updateButton);
-        wait.until(ExpectedConditions.stalenessOf(updateButton));
+
+        wait.until(driver -> getTotal() != totalBeforeUpdate);
 
         return this;
     }
